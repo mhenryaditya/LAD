@@ -1,6 +1,6 @@
 kind: pipeline
 type: docker
-name: LADfix
+name: default
 
 steps:
   - name: install_dependencies
@@ -9,17 +9,17 @@ steps:
       - composer install --no-interaction --prefer-dist --optimize-autoloader
 
   - name: copy_env_file
-    image: alpine:latest
+    image: php:8.2
     commands:
       - cp .env.example .env
 
   - name: generate_app_key
-    image: alpine:latest
+    image: php:8.2
     commands:
       - php artisan key:generate
 
   - name: run_migrations
-    image: mysql:latest
+    image: php:8.2
     environment:
       MYSQL_ROOT_PASSWORD:
         from_secret: mysql_root_password
@@ -55,8 +55,8 @@ steps:
         - sudo sed -i 's|listen = /run/php/php7.4-fpm.sock|listen = /run/php/php8.2-fpm.sock|g' /etc/php/8.2/fpm/pool.d/www-laravel.conf;
         - sudo sed -i 's|\[www\]|\[www-laravel\]|g' /etc/php/8.2/fpm/pool.d/www-laravel.conf;
         - sudo service php8.2-fpm restart;
-        - if [ ! -f /etc/nginx/sites-available/LAD ]; then
-          sudo tee /etc/nginx/sites-available/LAD <<EOF
+        - if [ ! -f /etc/nginx/sites-available/your-laravel-site ]; then
+          sudo tee /etc/nginx/sites-available/your-laravel-site <<EOF
           server {
           listen 80;
           server_name your_domain_or_ip;
@@ -78,10 +78,10 @@ steps:
           }
           }
           EOF
-          sudo ln -s /etc/nginx/sites-available/LAD /etc/nginx/sites-enabled/;
+          sudo ln -s /etc/nginx/sites-available/your-laravel-site /etc/nginx/sites-enabled/;
           sudo service nginx restart;
           fi;
-        - git pull origin master
+        - git pull origin main
         - composer install --no-interaction --prefer-dist --optimize-autoloader
         - php artisan migrate --force
         - php artisan cache:clear
