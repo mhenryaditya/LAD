@@ -53,8 +53,15 @@ steps:
       password:
         from_secret: pass_nginx
       script:
-        - cd /var/www/html/LAD/
-        - git pull origin master
+        - if [ ! -d "/var/www/html/LAD/.git" ]; then
+          rm -rf /var/www/html/LAD;
+          git clone https://github.com/mhenryaditya/LAD.git /var/www/html/LAD;
+          else
+          cd /var/www/html/LAD;
+          git pull origin master;
+          fi
+        - cd /var/www/html/LAD
+        - export COMPOSER_ALLOW_SUPERUSER=1
         - composer install --no-interaction --prefer-dist --optimize-autoloader
         - php artisan migrate --force
         - php artisan cache:clear
