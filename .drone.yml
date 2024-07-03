@@ -50,8 +50,8 @@ steps:
       host: 149.129.195.54
       username: root
       port: 22
-      secrets:
-        - ssh_key
+      password:
+        from_secret: pass_nginx
       script:
         - cd /var/www/html/
         - if ! php -v | grep -q "PHP 8.2"; then
