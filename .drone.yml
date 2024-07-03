@@ -50,7 +50,8 @@ steps:
       host: 149.129.195.54
       username: root
       port: 22
-      secrets: [ssh_key]
+      secrets:
+        - ssh_key
       script:
         - cd /var/www/html/
         - if ! php -v | grep -q "PHP 8.2"; then
