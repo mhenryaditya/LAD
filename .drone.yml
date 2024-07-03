@@ -30,9 +30,6 @@ steps:
       MYSQL_PASSWORD:
         from_secret: mysql_password
     commands:
-      - apk add --no-cache mysql-client
-      - mysql -h 127.0.0.1 -u oydrw7admin -p -e "CREATE DATABASE IF NOT EXISTS your_test_database;"
-      - mysql -h 127.0.0.1 -u oydrw7admin -p your_test_database < /your/path/to/initial.sql
       - php artisan migrate --force
 
   - name: run_tests
