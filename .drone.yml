@@ -1,0 +1,93 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: install_dependencies
+    image: composer:latest
+    commands:
+      - composer install --no-interaction --prefer-dist --optimize-autoloader
+
+  - name: copy_env_file
+    image: alpine:latest
+    commands:
+      - cp .env.example .env
+
+  - name: generate_app_key
+    image: alpine:latest
+    commands:
+      - php artisan key:generate
+
+  - name: run_migrations
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD:
+        from_secret: mysql_root_password
+      MYSQL_DATABASE:
+        from_secret: mysql_database
+      MYSQL_USER:
+        from_secret: mysql_user
+      MYSQL_PASSWORD:
+        from_secret: mysql_password
+    commands:
+      - apk add --no-cache mysql-client
+      - mysql -h 127.0.0.1 -u oydrw7admin -p -e "CREATE DATABASE IF NOT EXISTS your_test_database;"
+      - mysql -h 127.0.0.1 -u oydrw7admin -p your_test_database < /your/path/to/initial.sql
+      - php artisan migrate --force
+
+  - name: run_tests
+    image: php:8.2
+    commands:
+      - ./vendor/bin/phpunit
+
+  - name: deploy
+    image: appleboy/drone-ssh
+    settings:
+      host: your_server_ip
+      username: your_username
+      port: 22
+      secrets: [ssh_key]
+      script:
+        - cd /your/path/to/your/application
+        - if ! php -v | grep -q "PHP 8.2"; then
+          sudo apt update && sudo apt install -y software-properties-common;
+          sudo add-apt-repository -y ppa:ondrej/php;
+          sudo apt update && sudo apt install -y php8.2 php8.2-fpm php8.2-mysql;
+          fi;
+        - sudo cp /etc/php/8.1/fpm/pool.d/www.conf /etc/php/8.2/fpm/pool.d/www-laravel.conf;
+        - sudo sed -i 's|listen = /run/php/php7.4-fpm.sock|listen = /run/php/php8.2-fpm.sock|g' /etc/php/8.2/fpm/pool.d/www-laravel.conf;
+        - sudo sed -i 's|\[www\]|\[www-laravel\]|g' /etc/php/8.2/fpm/pool.d/www-laravel.conf;
+        - sudo service php8.2-fpm restart;
+        - if [ ! -f /etc/nginx/sites-available/LAD ]; then
+          sudo tee /etc/nginx/sites-available/LAD <<EOF
+          server {
+          listen 80;
+          server_name your_domain_or_ip;
+
+          root /your/path/to/your/application/public;
+          index index.php index.html index.htm;
+
+          location / {
+          try_files \$uri \$uri/ /index.php?\$query_string;
+          }
+
+          location ~ \.php$ {
+          include snippets/fastcgi-php.conf;
+          fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+          }
+
+          location ~ /\.ht {
+          deny all;
+          }
+          }
+          EOF
+          sudo ln -s /etc/nginx/sites-available/LAD /etc/nginx/sites-enabled/;
+          sudo service nginx restart;
+          fi;
+        - git pull origin master
+        - composer install --no-interaction --prefer-dist --optimize-autoloader
+        - php artisan migrate --force
+        - php artisan cache:clear
+        - php artisan config:cache
+        - php artisan route:cache
+        - php artisan view:cache
