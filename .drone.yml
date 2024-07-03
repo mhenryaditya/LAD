@@ -1,6 +1,6 @@
 kind: pipeline
 type: docker
-name: default
+name: LAD
 
 steps:
   - name: install_dependencies
