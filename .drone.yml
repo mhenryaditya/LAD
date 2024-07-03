@@ -1,6 +1,13 @@
 kind: pipeline
 type: docker
-name: LAD
+name: CI/CD LPTDPA Administration
+
+trigger:
+  event:
+    - pull_request
+    - push
+  branch:
+    - master
 
 steps:
   - name: install_dependencies
@@ -9,17 +16,17 @@ steps:
       - composer install --no-interaction --prefer-dist --optimize-autoloader
 
   - name: copy_env_file
-    image: alpine:latest
+    image: php:8.2
     commands:
       - cp .env.example .env
 
   - name: generate_app_key
-    image: alpine:latest
+    image: php:8.2
     commands:
       - php artisan key:generate
 
   - name: run_migrations
-    image: mysql:latest
+    image: php:8.2
     environment:
       MYSQL_ROOT_PASSWORD:
         from_secret: mysql_root_password
@@ -40,12 +47,12 @@ steps:
   - name: deploy
     image: appleboy/drone-ssh
     settings:
-      host: your_server_ip
-      username: your_username
+      host: 149.129.195.54
+      username: root
       port: 22
       secrets: [ssh_key]
       script:
-        - cd /your/path/to/your/application
+        - cd /var/www/html/
         - if ! php -v | grep -q "PHP 8.2"; then
           sudo apt update && sudo apt install -y software-properties-common;
           sudo add-apt-repository -y ppa:ondrej/php;
@@ -58,13 +65,16 @@ steps:
         - if [ ! -f /etc/nginx/sites-available/LAD ]; then
           sudo tee /etc/nginx/sites-available/LAD <<EOF
           server {
-          listen 80;
-          server_name your_domain_or_ip;
+          listen 443 ssl;
+          ssl on;
+          ssl_certificate /etc/ssl/certificate.crt;
+          ssl_certificate_key /etc/ssl/private.key;
+          server_name 149.129.195.54;
 
-          root /your/path/to/your/application/public;
+          root /var/www/html/LAD;
           index index.php index.html index.htm;
 
-          location / {
+          location /lptda-admin {
           try_files \$uri \$uri/ /index.php?\$query_string;
           }
 
