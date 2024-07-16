@@ -4,7 +4,7 @@ name: CI/CD LPTDPA Administration
 
 trigger:
   event:
-    - merge
+    - push
   branch:
     - master
 
