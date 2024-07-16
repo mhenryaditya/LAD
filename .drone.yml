@@ -28,8 +28,6 @@ steps:
   - name: run_migrations
     image: php:8.2
     environment:
-      MYSQL_ROOT_PASSWORD:
-        from_secret: mysql_root_password
       MYSQL_DATABASE:
         from_secret: mysql_database
       MYSQL_USER:
@@ -51,7 +49,7 @@ steps:
       username: root
       port: 22
       password:
-        from_secret: pass_nginx
+        from_secret: pass_ssh
       script:
         - if [ ! -d "/var/www/html/LAD/.git" ]; then
           rm -rf /var/www/html/LAD;
@@ -68,4 +66,3 @@ steps:
         - php artisan config:cache
         - php artisan route:cache
         - php artisan view:cache
-        - php artisan serve
