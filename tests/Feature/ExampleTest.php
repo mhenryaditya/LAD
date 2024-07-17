@@ -12,7 +12,7 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $response = $this->get('https://149.129.195.54/LAD/public');
+        $response = $this->get('/');
 
         $response->assertStatus(200);
     }
