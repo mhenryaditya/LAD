@@ -2,6 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('https://149.129.195.54/LAD/public', function () {
+Route::get('/', function () {
     return view('welcome');
 });
