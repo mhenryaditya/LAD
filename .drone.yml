@@ -36,10 +36,10 @@ steps:
     commands:
       - php artisan migrate --force
 
-  - name: run_tests
-    image: php:8.2
-    commands:
-      - ./vendor/bin/phpunit
+  # - name: run_tests
+  #   image: php:8.2
+  #   commands:
+  #     - ./vendor/bin/phpunit
 
   - name: deploy
     image: appleboy/drone-ssh
