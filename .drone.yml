@@ -48,7 +48,7 @@ steps:
       username: root
       port: 22
       password:
-        from_secret: pass_ssh
+        from_secret: SSH_PRIVATE_KEY
       script:
         - if [ ! -d "/var/www/html/LAD/.git" ]; then
           rm -rf /var/www/html/LAD;
