@@ -38,7 +38,6 @@ steps:
 
   # - name: run_tests
   #   image: php:8.2
-  #
   #   commands:
   #     - ./vendor/bin/phpunit
 
