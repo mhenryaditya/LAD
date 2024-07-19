@@ -42,6 +42,16 @@ steps:
   #
   #     - ./vendor/bin/phpunit
 
+  - name: connect_ssh
+    image: alpine
+    environtment:
+      username:
+        from_secret: SSH_USERNAME
+    commands:
+      - echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_ed25519
+      - chmod 600 /root/.ssh/id_ed25519
+      - ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no $username@149.129.195.54 "echo 'SSH connection successful'"
+
   - name: deploy
     image: appleboy/drone-ssh
     environment:
