@@ -48,9 +48,9 @@ steps:
       username:
         from_secret: SSH_USERNAME
     commands:
-      - echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_ed25519
-      - chmod 600 /root/.ssh/id_ed25519
-      - ssh -i /root/.ssh/id_ed25519 -o StrictHostKeyChecking=no $username@149.129.195.54 "echo 'SSH connection successful'"
+      - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+      - chmod 600 ~/.ssh/id_ed25519
+      - ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no $username@149.129.195.54 "echo 'SSH connection successful'"
 
   - name: deploy
     image: appleboy/drone-ssh
